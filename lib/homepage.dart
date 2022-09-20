@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_class/upload_product.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -27,6 +28,15 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             icon: const Icon(Icons.sign_language),
           ),
+          IconButton(
+            onPressed: () async {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UploadProduct()),
+              );
+            },
+            icon: const Icon(Icons.add),
+          ),
         ],
       ),
       body: Center(
@@ -37,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: ((context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
-                } else if (snapshot.connectionState == ConnectionState.done) {
+                } else if (snapshot.connectionState == ConnectionState.active) {
                   return ListView.builder(
                     itemCount: snapshot.data!.docs.length,
                     shrinkWrap: true,
@@ -56,9 +66,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       );
                     },
                   );
+                } else {
+                  return Center(
+                      child: Text(
+                          'Something went wrong ${snapshot.data!.docs} / ${snapshot.connectionState}'));
                 }
-
-                return const Text('Something went wrong');
               }),
             ),
           ],
@@ -67,3 +79,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+
+// keytool -list -v -alias androiddebugkey -keystore C:\Users\samue\.android\debug.keystore

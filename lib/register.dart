@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_class/homepage.dart';
+import 'package:firebase_class/widgets/text_field.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -14,8 +17,10 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _fullname = TextEditingController();
   TextEditingController _email = TextEditingController();
+  TextEditingController _phn = TextEditingController();
   TextEditingController _pass = TextEditingController();
   bool isOpen = true, _startloading = false;
+  final db = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +55,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                TextFormField(
-                  controller: _fullname,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                TextFieldd(
+                  _fullname,
+                  'Enter your full name',
                   validator: (value) {
                     if (value!.length < 4) {
                       return 'Full name cannot be less than 6 characters';
@@ -64,19 +69,23 @@ class _RegisterPageState extends State<RegisterPage> {
                       return null;
                     }
                   },
-                  decoration: const InputDecoration(
-                    labelText: 'Enter your full name',
-                    hintText: 'John Doe',
-                    border: OutlineInputBorder(),
-                    filled: true,
-                    fillColor: Colors.white38,
-                    prefixIcon: Icon(Icons.people),
-                  ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _email,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                TextFieldd(
+                  _phn,
+                  'Enter Phone Number',
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Empty field detected';
+                    } else {
+                      return null;
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFieldd(
+                  _email,
+                  'Enter your email address',
                   validator: (value) {
                     if (value!.length < 6) {
                       return 'Email address cannot be less than 6 characters';
@@ -88,14 +97,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       return null;
                     }
                   },
-                  decoration: const InputDecoration(
-                    labelText: 'Enter your email address',
-                    hintText: 'example@gmail.com',
-                    border: OutlineInputBorder(),
-                    filled: true,
-                    fillColor: Colors.white38,
-                    prefixIcon: Icon(Icons.mail),
-                  ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -177,18 +178,29 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      )
-          .then((value) {
-        stopLoading();
-        snackBar('Registration successful.');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const MyHomePage(),
-          ),
-        );
+              email: email.trim(), password: password)
+          .then((value) async {
+        try {
+          await db.collection("users").doc(value.user!.uid).set({
+            "uid": value.user!.uid,
+            "email": _email.text,
+            "fullname": _fullname.text,
+            "phone": _phn.text,
+            "pic": "",
+            "date_created": DateTime.now().toString(),
+          }).then((v) {
+            stopLoading();
+            snackBar('Registration successful.');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const MyHomePage(),
+              ),
+            );
+          });
+        } catch (e) {
+          snackBar(e.toString());
+        }
       });
     } on FirebaseAuthException catch (e) {
       stopLoading();
@@ -224,6 +236,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _fullname = TextEditingController();
     _email = TextEditingController();
     _pass = TextEditingController();
+    _phn = TextEditingController();
     super.initState();
   }
 
@@ -232,6 +245,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _fullname.dispose();
     _email.dispose();
     _pass.dispose();
+    _phn.dispose();
     super.dispose();
   }
 }

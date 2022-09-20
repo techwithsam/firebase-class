@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_class/homepage.dart';
 import 'package:flutter/gestures.dart';
@@ -150,11 +151,8 @@ class _LoginPageState extends State<LoginPage> {
     startLoading();
     try {
       await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      )
-          .then((value) {
+          .signInWithEmailAndPassword(email: email, password: password)
+          .then((value) async {
         stopLoading();
         snackBar('Login successful.');
         Navigator.push(
@@ -171,6 +169,9 @@ class _LoginPageState extends State<LoginPage> {
       } else if (e.code == 'wrong-password') {
         snackBar('Wrong password provided for that user.');
       }
+    } on TimeoutException catch (_) {
+      stopLoading();
+      snackBar('timeMsg');
     } catch (e) {
       stopLoading();
       snackBar(e.toString());
