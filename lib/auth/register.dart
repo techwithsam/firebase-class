@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_class/homepage.dart';
 import 'package:firebase_class/widgets/text_field.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -174,6 +174,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> handleRegister(String email, String password) async {
+    final storedata = Hive.box('name');
     startLoading();
     try {
       await FirebaseAuth.instance
@@ -186,9 +187,17 @@ class _RegisterPageState extends State<RegisterPage> {
             "email": _email.text,
             "fullname": _fullname.text,
             "phone": _phn.text,
-            "pic": "",
+            "type": "user",
             "date_created": DateTime.now().toString(),
           }).then((v) {
+            storedata.putAll({
+              "uid": value.user!.uid,
+              "email": _email.text,
+              "fullname": _fullname.text,
+              "phone": _phn.text,
+              "type": "user",
+              "date_created": DateTime.now().toString(),
+            });
             stopLoading();
             snackBar('Registration successful.');
             Navigator.push(

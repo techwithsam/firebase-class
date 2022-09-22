@@ -39,42 +39,40 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Center(
-        child: ListView(
-          children: [
-            StreamBuilder(
-              stream: db.collection("items").snapshots(),
-              builder: ((context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.connectionState == ConnectionState.active) {
-                  return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.grey,
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              snapshot.data!.docs[index]['name'],
-                            )
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                } else {
-                  return Center(
-                      child: Text(
-                          'Something went wrong ${snapshot.data!.docs} / ${snapshot.connectionState}'));
-                }
-              }),
-            ),
-          ],
-        ),
+      body: StreamBuilder(
+        stream: db.collection("items").snapshots(),
+        builder: ((context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.connectionState == ConnectionState.active) {
+            return ListView(
+              children: [
+                ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.grey,
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            snapshot.data!.docs[index]['name'],
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          } else {
+            return Center(
+                child: Text(
+                    'Something went wrong ${snapshot.data!.docs} / ${snapshot.connectionState}'));
+          }
+        }),
       ),
     );
   }
